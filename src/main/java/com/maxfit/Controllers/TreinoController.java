@@ -3,7 +3,7 @@ package com.maxfit.Controllers;
 import com.maxfit.dto.request.TreinoRequest;
 import com.maxfit.dto.response.ApiResponse;
 import com.maxfit.dto.response.TreinoResponse;
-import com.maxfit.service.TreinoService;
+import com.maxfit.services.TreinoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

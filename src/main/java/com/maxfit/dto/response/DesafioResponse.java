@@ -1,23 +1,29 @@
 package com.maxfit.dto.response;
 
-import com.maxfit.StatusDesafio;
-import lombok.AllArgsConstructor;
+import com.maxfit.model.StatusDesafio;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import java.time.LocalDate;
+
+import java.time.LocalDateTime;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
 public class DesafioResponse {
+
     private Long id;
     private Long alunoId;
-    private String nomeAluno;
+    private String alunoNome;
+
     private String titulo;
     private String descricao;
-    private LocalDate dataInicio;
-    private LocalDate dataFim;
+    private String meta;
+
+    private LocalDateTime dataInicio;
+    private LocalDateTime dataFim;
+
     private StatusDesafio status;
+    private Double progressoAtual;
+
+    private LocalDateTime dataCriacao;
+    private LocalDateTime dataConclusao;
 }

@@ -1,7 +1,7 @@
 package com.maxfit.repository;
 
-import com.maxfit.TipoUsuario;
-import com.maxfit.Usuario;
+import com.maxfit.model.TipoUsuario;
+import com.maxfit.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;

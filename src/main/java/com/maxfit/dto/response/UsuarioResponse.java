@@ -1,6 +1,6 @@
 package com.maxfit.dto.response;
 
-import com.maxfit.TipoUsuario;
+import com.maxfit.model.TipoUsuario;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

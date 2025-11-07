@@ -1,6 +1,6 @@
 package com.maxfit.dto.request;
 
-import com.maxfit.TipoUsuario;
+import com.maxfit.model.TipoUsuario;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

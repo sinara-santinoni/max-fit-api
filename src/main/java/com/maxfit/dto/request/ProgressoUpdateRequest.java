@@ -1,27 +1,22 @@
 package com.maxfit.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class ProgressoUpdateRequest {
 
-    @NotBlank(message = "Nome do exercício é obrigatório")
-    private String exercicio;
-
     private Double peso;
+    private Double altura;
 
-    private Integer repeticoes;
+    private Double circunferenciaBracos;
+    private Double circunferenciaPeito;
+    private Double circunferenciaCintura;
+    private Double circunferenciaQuadril;
+    private Double circunferenciaCoxas;
+    private Double circunferenciaPanturrilhas;
 
-    private Integer series;
-
-    private Integer rpe;
+    private Double percentualGordura;
+    private Double massaMuscular;
 
     private String observacoes;
 }

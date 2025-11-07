@@ -6,8 +6,8 @@ import com.maxfit.dto.request.VincularAlunoRequest;
 import com.maxfit.dto.response.AlunoResponse;
 import com.maxfit.dto.response.CadastroResponse;
 import com.maxfit.dto.response.LoginResponse;
-import com.maxfit.TipoUsuario;
-import com.maxfit.Usuario;
+import com.maxfit.model.TipoUsuario;
+import com.maxfit.model.Usuario;
 import com.maxfit.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
 
     @Transactional
-    public services.CadastroResponse cadastrar(CadastroRequest request) {
+    public CadastroResponse cadastrar(CadastroRequest request) {
         log.info("Iniciando cadastro de usuário: {}", request.getEmail());
 
         if (usuarioRepository.existsByEmail(request.getEmail())) {

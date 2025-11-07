@@ -1,14 +1,14 @@
-package com.maxfit;
+package com.maxfit.model;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
 @Table(name = "exercicios")
-@Data
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Setter
 public class Exercicio {
 
     @Id
@@ -32,4 +32,3 @@ public class Exercicio {
     @Column(columnDefinition = "TEXT")
     private String observacoes;
 }
-

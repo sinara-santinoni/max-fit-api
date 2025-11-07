@@ -4,7 +4,7 @@ import com.maxfit.dto.request.ProgressoRequest;
 import com.maxfit.dto.request.ProgressoUpdateRequest;
 import com.maxfit.dto.response.ApiResponse;
 import com.maxfit.dto.response.ProgressoResponse;
-import com.maxfit.service.ProgressoService;
+import com.maxfit.services.ProgressoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

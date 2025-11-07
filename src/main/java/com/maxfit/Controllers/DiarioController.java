@@ -3,7 +3,7 @@ package com.maxfit.Controllers;
 import com.maxfit.dto.request.DiarioRequest;
 import com.maxfit.dto.response.ApiResponse;
 import com.maxfit.dto.response.DiarioResponse;
-import com.maxfit.service.DiarioService;
+import com.maxfit.services.DiarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

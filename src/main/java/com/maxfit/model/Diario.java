@@ -1,4 +1,4 @@
-package com.maxfit;
+package com.maxfit.model;
 
 import jakarta.persistence.*;
 import lombok.*;

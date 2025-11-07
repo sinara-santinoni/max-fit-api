@@ -1,22 +1,36 @@
-package com.maxfit.dto.response;
+package com.maxfit.model;
 
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "progresso")
 @Data
 @Builder
-public class ProgressoResponse {
+@NoArgsConstructor
+@AllArgsConstructor
+public class Progresso {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long alunoId;
-    private String alunoNome;
 
+    @ManyToOne
+    @JoinColumn(name = "aluno_id", nullable = false)
+    private Usuario aluno;
+
+    @Column(nullable = false)
     private Double peso;
+
+    @Column(nullable = false)
     private Double altura;
+
     private Double imc;
-    private String classificacaoIMC;
 
     private Double circunferenciaBracos;
     private Double circunferenciaPeito;
@@ -28,6 +42,9 @@ public class ProgressoResponse {
     private Double percentualGordura;
     private Double massaMuscular;
 
+    @Column(columnDefinition = "TEXT")
     private String observacoes;
+
+    @Column(nullable = false)
     private LocalDateTime dataRegistro;
 }

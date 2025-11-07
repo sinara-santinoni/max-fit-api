@@ -1,5 +1,3 @@
-package com.maxfit.exception;
-
 import com.maxfit.dto.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

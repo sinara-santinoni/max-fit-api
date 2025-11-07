@@ -1,36 +1,30 @@
 package com.maxfit.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import jakarta.validation.constraints.Positive;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import java.time.LocalDate;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class ProgressoRequest {
 
     @NotNull(message = "ID do aluno é obrigatório")
     private Long alunoId;
 
-    @NotNull(message = "Data do registro é obrigatória")
-    private LocalDate dataRegistro;
-
-    @NotBlank(message = "Nome do exercício é obrigatório")
-    private String exercicio;
-
+    @Positive(message = "Peso deve ser maior que zero")
     private Double peso;
 
-    private Integer repeticoes;
+    @Positive(message = "Altura deve ser maior que zero")
+    private Double altura;
 
-    private Integer series;
+    private Double circunferenciaBracos;
+    private Double circunferenciaPeito;
+    private Double circunferenciaCintura;
+    private Double circunferenciaQuadril;
+    private Double circunferenciaCoxas;
+    private Double circunferenciaPanturrilhas;
 
-    private Integer rpe;
+    private Double percentualGordura;
+    private Double massaMuscular;
 
     private String observacoes;
 }
-

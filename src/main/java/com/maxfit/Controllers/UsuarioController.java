@@ -7,7 +7,7 @@ import com.maxfit.dto.response.AlunoResponse;
 import com.maxfit.dto.response.ApiResponse;
 import com.maxfit.dto.response.CadastroResponse;
 import com.maxfit.dto.response.LoginResponse;
-import com.maxfit.service.UsuarioService;
+import com.maxfit.services.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

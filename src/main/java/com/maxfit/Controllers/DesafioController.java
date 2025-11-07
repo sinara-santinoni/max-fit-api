@@ -4,7 +4,7 @@ import com.maxfit.dto.request.DesafioRequest;
 import com.maxfit.dto.request.ParticiparDesafioRequest;
 import com.maxfit.dto.response.ApiResponse;
 import com.maxfit.dto.response.DesafioResponse;
-import com.maxfit.service.DesafioService;
+import com.maxfit.services.DesafioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

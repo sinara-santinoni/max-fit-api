@@ -1,19 +1,22 @@
 package com.maxfit.repository;
 
-import com.maxfit.Desafio;
+import com.maxfit.model.Desafio;
+import com.maxfit.model.StatusDesafio;
+import com.maxfit.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
 @Repository
 public interface DesafioRepository extends JpaRepository<Desafio, Long> {
 
-    List<Desafio> findAllByOrderByDataFimAsc();
+    // Busca todos os desafios de um aluno
+    List<Desafio> findByAluno(Usuario aluno);
 
-    @Query("SELECT d FROM Desafio d WHERE d.alunoId = :alunoId " +
-            "OR d.id IN (SELECT da.desafioId FROM DesafioAluno da WHERE da.alunoId = :alunoId) " +
-            "ORDER BY d.dataFim ASC")
-    List<Desafio> findDesafiosByAlunoId(@Param("alunoId") Long alunoId);
+    // Busca desafios de um aluno por status
+    List<Desafio> findByAlunoAndStatus(Usuario aluno, StatusDesafio status);
+
+    // Busca desafios ativos de um aluno
+    List<Desafio> findByAlunoAndStatusOrderByDataInicioDesc(Usuario aluno, StatusDesafio status);
 }

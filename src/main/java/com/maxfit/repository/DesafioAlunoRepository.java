@@ -1,6 +1,6 @@
 package com.maxfit.repository;
 
-import com.maxfit.DesafioAluno;
+import com.maxfit.model.DesafioAluno;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;

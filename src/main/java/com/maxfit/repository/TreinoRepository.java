@@ -1,6 +1,6 @@
 package com.maxfit.repository;
 
-import com.maxfit.Treino;
+import com.maxfit.model.Treino;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;

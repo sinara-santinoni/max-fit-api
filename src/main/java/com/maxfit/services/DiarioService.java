@@ -2,7 +2,7 @@ package com.maxfit.services;
 
 import com.maxfit.dto.request.DiarioRequest;
 import com.maxfit.dto.response.DiarioResponse;
-import com.maxfit.Diario;
+import com.maxfit.model.Diario;
 import com.maxfit.repository.DiarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

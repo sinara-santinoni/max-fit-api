@@ -1,6 +1,6 @@
 package com.maxfit.repository;
 
-import com.maxfit.Diario;
+import com.maxfit.model.Diario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;

@@ -2,16 +2,11 @@ package com.maxfit.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import java.time.LocalDate;
+
+import java.time.LocalDateTime;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class DesafioRequest {
 
     @NotNull(message = "ID do aluno é obrigatório")
@@ -20,9 +15,14 @@ public class DesafioRequest {
     @NotBlank(message = "Título é obrigatório")
     private String titulo;
 
-    @NotBlank(message = "Descrição é obrigatória")
     private String descricao;
 
-    @NotNull(message = "Data fim é obrigatória")
-    private LocalDate dataFim;
+    @NotBlank(message = "Meta é obrigatória")
+    private String meta;
+
+    @NotNull(message = "Data de início é obrigatória")
+    private LocalDateTime dataInicio;
+
+    @NotNull(message = "Data de fim é obrigatória")
+    private LocalDateTime dataFim;
 }
