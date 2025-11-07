@@ -24,23 +24,21 @@ public class TreinoService {
     public void cadastrarTreino(TreinoRequest request) {
         log.info("Cadastrando treino: {} para aluno {}", request.getTitulo(), request.getAlunoId());
 
-        Treino treino = Treino.builder()
-                .alunoId(request.getAlunoId())
-                .personalId(request.getPersonalId())
-                .titulo(request.getTitulo())
-                .objetivo(request.getObjetivo())
-                .nivel(request.getNivel())
-                .validade(request.getValidade())
-                .build();
+        Treino treino = new Treino();
+        treino.setAlunoId(request.getAlunoId());
+        treino.setPersonalId(request.getPersonalId());
+        treino.setTitulo(request.getTitulo());
+        treino.setObjetivo(request.getObjetivo());
+        treino.setNivel(request.getNivel());
+        treino.setValidade(request.getValidade());
 
         request.getExercicios().forEach(exReq -> {
-            Exercicio exercicio = Exercicio.builder()
-                    .nome(exReq.getNome())
-                    .series(exReq.getSeries())
-                    .repeticoes(exReq.getRepeticoes())
-                    .descanso(exReq.getDescanso())
-                    .observacoes(exReq.getObservacoes())
-                    .build();
+            Exercicio exercicio = new Exercicio();
+            exercicio.setNome(exReq.getNome());
+            exercicio.setSeries(exReq.getSeries());
+            exercicio.setRepeticoes(exReq.getRepeticoes());
+            exercicio.setDescanso(exReq.getDescanso());
+            exercicio.setObservacoes(exReq.getObservacoes());
 
             treino.addExercicio(exercicio);
         });
