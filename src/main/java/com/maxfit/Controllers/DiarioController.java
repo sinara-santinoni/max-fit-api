@@ -18,12 +18,7 @@ public class DiarioController {
 
     private final DiarioService diarioService;
 
-    @GetMapping("/{alunoId}")
-    public ResponseEntity<List<DiarioResponse>> buscarDiarios(@PathVariable Long alunoId) {
-        List<DiarioResponse> diarios = diarioService.buscarDiarios(alunoId);
-        return ResponseEntity.ok(diarios);
-    }
-
+    // ======= Criar Diário =======
     @PostMapping
     public ResponseEntity<ApiResponse<DiarioResponse>> registrarDiario(
             @Valid @RequestBody DiarioRequest request) {
@@ -38,5 +33,19 @@ public class DiarioController {
                     .body(ApiResponse.error(e.getMessage()));
         }
     }
-}
 
+    // ======= Listar Diários por aluno =======
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<DiarioResponse>>> listarDiarios(@RequestParam Long alunoId) {
+        try {
+            List<DiarioResponse> diarios = diarioService.buscarDiarios(alunoId);
+            return ResponseEntity.ok(
+                    ApiResponse.success("Lista de diários retornada com sucesso.", diarios)
+            );
+        } catch (RuntimeException e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erro ao buscar diários: " + e.getMessage()));
+        }
+    }
+}

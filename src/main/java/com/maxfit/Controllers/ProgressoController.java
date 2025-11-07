@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -19,12 +20,26 @@ public class ProgressoController {
 
     private final ProgressoService progressoService;
 
+    // ====== LISTAR PROGRESSO POR ALUNO ======
     @GetMapping("/{alunoId}")
-    public ResponseEntity<List<ProgressoResponse>> buscarProgresso(@PathVariable Long alunoId) {
-        List<ProgressoResponse> progresso = progressoService.buscarProgresso(alunoId);
-        return ResponseEntity.ok(progresso);
+    public ResponseEntity<ApiResponse<List<ProgressoResponse>>> listarProgresso(@PathVariable Long alunoId) {
+        try {
+            List<ProgressoResponse> progresso = progressoService.buscarProgresso(alunoId);
+            return ResponseEntity.ok(
+                    ApiResponse.success("Lista de progresso retornada com sucesso!", progresso)
+            );
+        } catch (RuntimeException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Erro ao listar progresso: " + e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erro interno do servidor."));
+        }
     }
 
+    // ====== CADASTRAR NOVO PROGRESSO ======
     @PostMapping
     public ResponseEntity<ApiResponse<ProgressoResponse>> cadastrarProgresso(
             @Valid @RequestBody ProgressoRequest request) {
@@ -32,14 +47,19 @@ public class ProgressoController {
             ProgressoResponse response = progressoService.cadastrarProgresso(request);
             return ResponseEntity
                     .status(HttpStatus.CREATED)
-                    .body(ApiResponse.success("Progresso salvo com sucesso!", response));
+                    .body(ApiResponse.success("Progresso registrado com sucesso!", response));
         } catch (RuntimeException e) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error(e.getMessage()));
+                    .body(ApiResponse.error("Erro ao registrar progresso: " + e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erro interno do servidor."));
         }
     }
 
+    // ====== ATUALIZAR PROGRESSO EXISTENTE ======
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> atualizarProgresso(
             @PathVariable Long id,
@@ -50,7 +70,11 @@ public class ProgressoController {
         } catch (RuntimeException e) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error(e.getMessage()));
+                    .body(ApiResponse.error("Erro ao atualizar progresso: " + e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Erro interno do servidor."));
         }
     }
 }

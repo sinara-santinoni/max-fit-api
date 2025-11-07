@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,7 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
 
+    // ===== CADASTRAR USUÁRIO =====
     @Transactional
     public CadastroResponse cadastrar(CadastroRequest request) {
         log.info("Iniciando cadastro de usuário: {}", request.getEmail());
@@ -52,6 +54,7 @@ public class UsuarioService {
                 .build();
     }
 
+    // ===== LOGIN =====
     public LoginResponse login(LoginRequest request) {
         log.info("Tentativa de login: {}", request.getEmail());
 
@@ -68,6 +71,15 @@ public class UsuarioService {
                 .build();
     }
 
+    // ===== LISTAR TODOS OS USUÁRIOS =====
+    public List<Usuario> listarTodos() {
+        log.info("Listando todos os usuários...");
+        List<Usuario> usuarios = usuarioRepository.findAll();
+        log.info("Total de usuários encontrados: {}", usuarios.size());
+        return usuarios;
+    }
+
+    // ===== BUSCAR ALUNOS DISPONÍVEIS =====
     public List<AlunoResponse> buscarAlunosDisponiveis() {
         log.info("Buscando alunos disponíveis");
 
@@ -80,6 +92,7 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
+    // ===== BUSCAR ALUNOS DE UM PERSONAL =====
     public List<AlunoResponse> buscarAlunosDoPersonal(Long idPersonal) {
         log.info("Buscando alunos do personal: {}", idPersonal);
 
@@ -92,6 +105,7 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
+    // ===== VINCULAR ALUNO =====
     @Transactional
     public void vincularAluno(VincularAlunoRequest request) {
         log.info("Vinculando aluno {} ao personal {}", request.getAlunoId(), request.getPersonalId());
@@ -109,6 +123,7 @@ public class UsuarioService {
         log.info("Aluno {} vinculado ao personal {}", request.getAlunoId(), request.getPersonalId());
     }
 
+    // ===== REMOVER ALUNO =====
     @Transactional
     public void removerAluno(Long idAluno) {
         log.info("Removendo vínculo do aluno: {}", idAluno);
@@ -122,6 +137,7 @@ public class UsuarioService {
         log.info("Aluno {} desvinculado do personal", idAluno);
     }
 
+    // ===== CONVERSÃO DE ENTIDADE PARA RESPONSE =====
     private AlunoResponse toAlunoResponse(Usuario usuario) {
         return AlunoResponse.builder()
                 .id(usuario.getId())

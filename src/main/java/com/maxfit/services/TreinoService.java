@@ -32,6 +32,7 @@ public class TreinoService {
         treino.setNivel(request.getNivel());
         treino.setValidade(request.getValidade());
 
+        // Adiciona os exercícios do treino
         request.getExercicios().forEach(exReq -> {
             Exercicio exercicio = new Exercicio();
             exercicio.setNome(exReq.getNome());
@@ -39,14 +40,29 @@ public class TreinoService {
             exercicio.setRepeticoes(exReq.getRepeticoes());
             exercicio.setDescanso(exReq.getDescanso());
             exercicio.setObservacoes(exReq.getObservacoes());
-
             treino.addExercicio(exercicio);
         });
 
         Treino salvo = treinoRepository.save(treino);
+        log.info("Novo treino criado: {} (ID {}) para aluno {}", salvo.getTitulo(), salvo.getId(), salvo.getAlunoId());
+    }
 
-        log.info("Novo treino criado: {} (ID {}) para aluno {}",
-                salvo.getTitulo(), salvo.getId(), salvo.getAlunoId());
+    // 🔹 NOVO MÉTODO - Lista todos os treinos cadastrados
+    public List<TreinoResponse> listarTodos() {
+        log.info("Listando todos os treinos...");
+
+        List<Treino> treinos = treinoRepository.findAll();
+
+        if (treinos.isEmpty()) {
+            log.info("Nenhum treino encontrado no banco de dados.");
+            return List.of();
+        }
+
+        log.info("Total de treinos encontrados: {}", treinos.size());
+
+        return treinos.stream()
+                .map(this::toTreinoResponse)
+                .collect(Collectors.toList());
     }
 
     public List<TreinoResponse> buscarTreinosDoAluno(Long alunoId) {
@@ -66,6 +82,7 @@ public class TreinoService {
                 .collect(Collectors.toList());
     }
 
+    // 🔹 Conversão de entidades para DTOs
     private TreinoResponse toTreinoResponse(Treino treino) {
         List<ExercicioResponse> exercicios = treino.getExercicios().stream()
                 .map(this::toExercicioResponse)

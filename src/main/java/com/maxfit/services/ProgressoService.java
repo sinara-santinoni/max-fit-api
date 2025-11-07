@@ -8,6 +8,7 @@ import com.maxfit.model.Usuario;
 import com.maxfit.repository.ProgressoRepository;
 import com.maxfit.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,26 +18,35 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProgressoService {
 
     private final ProgressoRepository progressoRepository;
     private final UsuarioRepository usuarioRepository;
 
+    // ===== LISTAR PROGRESSO DO ALUNO =====
     public List<ProgressoResponse> buscarProgresso(Long alunoId) {
-        Usuario aluno = usuarioRepository.findById(alunoId)
-                .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
+        log.info("Buscando progresso do aluno ID: {}", alunoId);
 
-        return progressoRepository.findByAlunoOrderByDataRegistroDesc(aluno).stream()
+        Usuario aluno = usuarioRepository.findById(alunoId)
+                .orElseThrow(() -> new RuntimeException("Aluno não encontrado."));
+
+        List<Progresso> lista = progressoRepository.findByAlunoOrderByDataRegistroDesc(aluno);
+        log.info("Foram encontrados {} registros de progresso para o aluno {}", lista.size(), aluno.getNome());
+
+        return lista.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
 
+    // ===== CADASTRAR NOVO PROGRESSO =====
     @Transactional
     public ProgressoResponse cadastrarProgresso(ProgressoRequest request) {
-        Usuario aluno = usuarioRepository.findById(request.getAlunoId())
-                .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
+        log.info("Cadastrando novo progresso para aluno ID: {}", request.getAlunoId());
 
-        // Validações
+        Usuario aluno = usuarioRepository.findById(request.getAlunoId())
+                .orElseThrow(() -> new RuntimeException("Aluno não encontrado."));
+
         validarDadosProgresso(request);
 
         Progresso progresso = Progresso.builder()
@@ -56,81 +66,77 @@ public class ProgressoService {
                 .dataRegistro(LocalDateTime.now())
                 .build();
 
-        Progresso progressoSalvo = progressoRepository.save(progresso);
-        return convertToResponse(progressoSalvo);
+        Progresso salvo = progressoRepository.save(progresso);
+        log.info("Progresso salvo com sucesso! ID: {}", salvo.getId());
+
+        return convertToResponse(salvo);
     }
 
+    // ===== ATUALIZAR PROGRESSO EXISTENTE =====
     @Transactional
     public void atualizarProgresso(Long id, ProgressoUpdateRequest request) {
-        Progresso progresso = progressoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Registro de progresso não encontrado"));
+        log.info("Atualizando progresso ID: {}", id);
 
-        // Atualizar apenas os campos fornecidos
+        Progresso progresso = progressoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Registro de progresso não encontrado."));
+
+        boolean recalcularIMC = false;
+
         if (request.getPeso() != null) {
             progresso.setPeso(request.getPeso());
+            recalcularIMC = true;
         }
         if (request.getAltura() != null) {
             progresso.setAltura(request.getAltura());
+            recalcularIMC = true;
         }
-
-        // Recalcular IMC se peso ou altura foram alterados
-        if (request.getPeso() != null || request.getAltura() != null) {
+        if (recalcularIMC) {
             progresso.setImc(calcularIMC(progresso.getPeso(), progresso.getAltura()));
         }
 
-        if (request.getCircunferenciaBracos() != null) {
-            progresso.setCircunferenciaBracos(request.getCircunferenciaBracos());
-        }
-        if (request.getCircunferenciaPeito() != null) {
-            progresso.setCircunferenciaPeito(request.getCircunferenciaPeito());
-        }
-        if (request.getCircunferenciaCintura() != null) {
-            progresso.setCircunferenciaCintura(request.getCircunferenciaCintura());
-        }
-        if (request.getCircunferenciaQuadril() != null) {
-            progresso.setCircunferenciaQuadril(request.getCircunferenciaQuadril());
-        }
-        if (request.getCircunferenciaCoxas() != null) {
-            progresso.setCircunferenciaCoxas(request.getCircunferenciaCoxas());
-        }
-        if (request.getCircunferenciaPanturrilhas() != null) {
-            progresso.setCircunferenciaPanturrilhas(request.getCircunferenciaPanturrilhas());
-        }
-        if (request.getPercentualGordura() != null) {
-            progresso.setPercentualGordura(request.getPercentualGordura());
-        }
-        if (request.getMassaMuscular() != null) {
-            progresso.setMassaMuscular(request.getMassaMuscular());
-        }
-        if (request.getObservacoes() != null) {
-            progresso.setObservacoes(request.getObservacoes());
-        }
+        if (request.getCircunferenciaBracos() != null) progresso.setCircunferenciaBracos(request.getCircunferenciaBracos());
+        if (request.getCircunferenciaPeito() != null) progresso.setCircunferenciaPeito(request.getCircunferenciaPeito());
+        if (request.getCircunferenciaCintura() != null) progresso.setCircunferenciaCintura(request.getCircunferenciaCintura());
+        if (request.getCircunferenciaQuadril() != null) progresso.setCircunferenciaQuadril(request.getCircunferenciaQuadril());
+        if (request.getCircunferenciaCoxas() != null) progresso.setCircunferenciaCoxas(request.getCircunferenciaCoxas());
+        if (request.getCircunferenciaPanturrilhas() != null) progresso.setCircunferenciaPanturrilhas(request.getCircunferenciaPanturrilhas());
+        if (request.getPercentualGordura() != null) progresso.setPercentualGordura(request.getPercentualGordura());
+        if (request.getMassaMuscular() != null) progresso.setMassaMuscular(request.getMassaMuscular());
+        if (request.getObservacoes() != null) progresso.setObservacoes(request.getObservacoes());
 
         progressoRepository.save(progresso);
+        log.info("Progresso ID {} atualizado com sucesso!", id);
     }
 
+    // ===== VALIDAÇÕES =====
     private void validarDadosProgresso(ProgressoRequest request) {
-        if (request.getPeso() != null && request.getPeso() <= 0) {
-            throw new RuntimeException("Peso deve ser maior que zero");
-        }
-        if (request.getAltura() != null && request.getAltura() <= 0) {
-            throw new RuntimeException("Altura deve ser maior que zero");
-        }
+        if (request.getPeso() != null && request.getPeso() <= 0)
+            throw new RuntimeException("Peso deve ser maior que zero.");
+        if (request.getAltura() != null && request.getAltura() <= 0)
+            throw new RuntimeException("Altura deve ser maior que zero.");
         if (request.getPercentualGordura() != null &&
-                (request.getPercentualGordura() < 0 || request.getPercentualGordura() > 100)) {
-            throw new RuntimeException("Percentual de gordura deve estar entre 0 e 100");
-        }
+                (request.getPercentualGordura() < 0 || request.getPercentualGordura() > 100))
+            throw new RuntimeException("Percentual de gordura deve estar entre 0 e 100.");
     }
 
+    // ===== CÁLCULOS =====
     private Double calcularIMC(Double peso, Double altura) {
-        if (peso == null || altura == null || altura == 0) {
-            return null;
-        }
-        // IMC = peso / (altura²)
+        if (peso == null || altura == null || altura == 0) return null;
         double imc = peso / (altura * altura);
-        return Math.round(imc * 100.0) / 100.0; // Arredonda para 2 casas decimais
+        return Math.round(imc * 100.0) / 100.0;
     }
 
+    private String classificarIMC(Double imc) {
+        if (imc == null) return null;
+        if (imc < 18.5) return "Abaixo do peso";
+        if (imc < 25) return "Peso normal";
+        if (imc < 30) return "Sobrepeso";
+        if (imc < 35) return "Obesidade Grau I";
+        if (imc < 40) return "Obesidade Grau II";
+        return "Obesidade Grau III";
+    }
+
+    // ===== CONVERSÃO PARA RESPONSE =====
     private ProgressoResponse convertToResponse(Progresso progresso) {
         return ProgressoResponse.builder()
                 .id(progresso.getId())
@@ -151,24 +157,5 @@ public class ProgressoService {
                 .dataRegistro(progresso.getDataRegistro())
                 .classificacaoIMC(classificarIMC(progresso.getImc()))
                 .build();
-    }
-
-    private String classificarIMC(Double imc) {
-        if (imc == null) {
-            return null;
-        }
-        if (imc < 18.5) {
-            return "Abaixo do peso";
-        } else if (imc < 25) {
-            return "Peso normal";
-        } else if (imc < 30) {
-            return "Sobrepeso";
-        } else if (imc < 35) {
-            return "Obesidade Grau I";
-        } else if (imc < 40) {
-            return "Obesidade Grau II";
-        } else {
-            return "Obesidade Grau III";
-        }
     }
 }
