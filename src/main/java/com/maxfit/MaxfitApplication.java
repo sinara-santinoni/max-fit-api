@@ -9,4 +9,6 @@ public class MaxfitApplication {
     public static void main(String[] args) {
         SpringApplication.run(MaxfitApplication.class, args);
     }
+
+
 }
