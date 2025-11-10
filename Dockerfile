@@ -1,18 +1,29 @@
-# 1. Imagem de base
-# Vamos usar uma imagem oficial que já tem o Java 17 (o mesmo do seu pom.xml)
-FROM eclipse-temurin:17-jre-jammy
+# ----- Estágio 1: O Construtor (Builder) -----
+# Usamos uma imagem que já tem Maven e o JDK 17
+FROM maven:3.9-eclipse-temurin-17 AS builder
 
-# 2. Definir o diretório de trabalho dentro do container
+# Define o diretório de trabalho
 WORKDIR /app
 
-# 3. Copiar o .jar do seu projeto para dentro da imagem
-# (Adapte o nome do .jar se for diferente)
-COPY target/properties-1.0.0.jar app.jar
+# Copia o pom.xml e baixa as dependências (isso acelera builds futuros)
+COPY pom.xml .
+RUN mvn dependency:go-offline
 
-# 4. Expor a porta
-# O seu application.properties usa a porta 10000
+# Copia o resto do código-fonte e constrói o projeto
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+# ----- Estágio 2: O Corredor (Runner) -----
+# Começamos de uma imagem limpa, apenas com o JRE (menor)
+FROM eclipse-temurin:17-jre-jammy
+
+WORKDIR /app
+
+# Copia o .jar que foi construído no Estágio 1
+COPY --from=builder /app/target/properties-1.0.0.jar app.jar
+
+# Expõe a porta que o Render vai usar (ele lê a ${PORT})
 EXPOSE 10000
 
-# 5. Comando para rodar a aplicação
-# Este é o comando que será executado quando o container iniciar
+# Comando para rodar a aplicação
 CMD ["java", "-jar", "app.jar"]
