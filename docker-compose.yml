@@ -1,0 +1,30 @@
+services:
+  api:
+    build: .
+    container_name: maxfit
+    working_dir: /app
+    volumes:
+      - ./target/properties-1.0.0.jar:/app/properties-1.0.0.jar
+    ports:
+      - "10000:10000"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/maxfit
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=root
+    depends_on:
+      - db
+    command: ["java", "-jar", "properties-1.0.0.jar"]
+
+  db:
+    image: 'postgres:latest'
+    container_name: dbmaxfit
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: maxfit
+    volumes:
+      - db_data:/var/lib/postgresql/
+volumes:
+  db_data:
