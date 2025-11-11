@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,12 @@ import java.util.Map;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+
+
+    @CrossOrigin(origins = {
+            "http://localhost:5173",
+            "https://lolly-mandzi-c58daa.netlify.app"
+    }, allowCredentials = "true")
 
     // ===== CADASTRAR USUÁRIO =====
     @PostMapping("/cadastro")
