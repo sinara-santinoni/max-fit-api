@@ -20,7 +20,7 @@ public class ProgressoController {
 
     private final ProgressoService progressoService;
 
-    // ====== LISTAR PROGRESSO POR ALUNO ======
+
     @GetMapping("/{alunoId}")
     public ResponseEntity<ApiResponse<List<ProgressoResponse>>> listarProgresso(@PathVariable Long alunoId) {
         try {
@@ -39,7 +39,7 @@ public class ProgressoController {
         }
     }
 
-    // ====== CADASTRAR NOVO PROGRESSO ======
+
     @PostMapping
     public ResponseEntity<ApiResponse<ProgressoResponse>> cadastrarProgresso(
             @Valid @RequestBody ProgressoRequest request) {
@@ -59,7 +59,7 @@ public class ProgressoController {
         }
     }
 
-    // ====== ATUALIZAR PROGRESSO EXISTENTE ======
+
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> atualizarProgresso(
             @PathVariable Long id,

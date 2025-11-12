@@ -28,7 +28,7 @@ public class HealthController {
             response.put("status", "✅ Banco conectado com sucesso!");
             response.put("horaServidor", now);
         } catch (Exception e) {
-            response.put("status", "❌ Falha ao conectar");
+            response.put("status", " Falha ao conectar");
             response.put("erro", e.getMessage());
         }
 
