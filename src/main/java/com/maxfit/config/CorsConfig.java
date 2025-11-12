@@ -10,16 +10,15 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                // Permite múltiplos domínios e suporta curingas se necessário
                 .allowedOriginPatterns(
                         "https://cheerful-klepon-54ef0e.netlify.app",
                         "https://maxfit-tcc.onrender.com",
-                        "http://localhost:5500"
+                        "http://localhost:5500",
+                        "https://lolly-mandzi-c58daa.netlify.app" // 👈 adiciona este
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*") // Permite todos os headers
-                .allowCredentials(true) // Permite cookies e credenciais
-                .maxAge(3600); // Tempo em segundos que o browser cacheia as regras CORS
+                .allowedHeaders("*")
+                .allowCredentials(true)
+                .maxAge(3600);
     }
-
 }
