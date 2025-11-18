@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.List;
 import java.util.Map;
@@ -25,12 +24,6 @@ import java.util.Map;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
-
-
-    @CrossOrigin(origins = {
-            "http://localhost:5173",
-            "https://lolly-mandzi-c58daa.netlify.app"
-    }, allowCredentials = "true")
 
     // ===== CADASTRAR USUÁRIO =====
     @PostMapping("/cadastro")
@@ -72,21 +65,21 @@ public class UsuarioController {
         }
     }
 
-    // ===== ALUNOS DISPONÍVEIS =====
+    // ===== BUSCAR ALUNOS DISPONÍVEIS =====
     @GetMapping("/alunos-disponiveis")
     public ResponseEntity<List<AlunoResponse>> buscarAlunosDisponiveis() {
         List<AlunoResponse> alunos = usuarioService.buscarAlunosDisponiveis();
         return ResponseEntity.ok(alunos);
     }
 
-    // ===== ALUNOS DE UM PERSONAL =====
+    // ===== BUSCAR ALUNOS DO PERSONAL =====
     @GetMapping("/alunos-do-personal/{idPersonal}")
     public ResponseEntity<List<AlunoResponse>> buscarAlunosDoPersonal(@PathVariable Long idPersonal) {
         List<AlunoResponse> alunos = usuarioService.buscarAlunosDoPersonal(idPersonal);
         return ResponseEntity.ok(alunos);
     }
 
-    // ===== VINCULAR ALUNO =====
+    // ===== VINCULAR ALUNO AO PERSONAL =====
     @PutMapping("/vincular-aluno")
     public ResponseEntity<ApiResponse<Void>> vincularAluno(@Valid @RequestBody VincularAlunoRequest request) {
         try {
@@ -99,7 +92,7 @@ public class UsuarioController {
         }
     }
 
-    // ===== REMOVER ALUNO =====
+    // ===== REMOVER ALUNO DO PERSONAL =====
     @PutMapping("/remover-aluno/{idAluno}")
     public ResponseEntity<ApiResponse<Void>> removerAluno(@PathVariable Long idAluno) {
         try {

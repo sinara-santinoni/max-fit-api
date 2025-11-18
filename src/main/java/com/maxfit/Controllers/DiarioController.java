@@ -18,7 +18,7 @@ public class DiarioController {
 
     private final DiarioService diarioService;
 
-    // ======= Criar Diário =======
+
     @PostMapping
     public ResponseEntity<ApiResponse<DiarioResponse>> registrarDiario(
             @Valid @RequestBody DiarioRequest request) {
@@ -34,7 +34,7 @@ public class DiarioController {
         }
     }
 
-    // ======= Listar Diários por aluno =======
+
     @GetMapping
     public ResponseEntity<ApiResponse<List<DiarioResponse>>> listarDiarios(@RequestParam Long alunoId) {
         try {

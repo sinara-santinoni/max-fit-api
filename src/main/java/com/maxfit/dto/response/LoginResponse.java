@@ -15,4 +15,7 @@ public class LoginResponse {
     private String nome;
     private String email;
     private TipoUsuario tipo;
+
+    // Novo campo para sessão/token (gerado no login)
+    private String token;
 }
