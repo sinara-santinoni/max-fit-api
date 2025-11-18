@@ -8,7 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class CorsConfig implements WebMvcConfigurer {
 
     @Override
-    public void addCorsMappings(CorsRegistry registry) {
+    public void addCorsMappings(@org.jetbrains.annotations.NotNull CorsRegistry registry) {
         registry.addMapping("/**") // Aplica o CORS para todos os endpoints da API
                 .allowedOrigins(
                         "http://localhost:5173",
