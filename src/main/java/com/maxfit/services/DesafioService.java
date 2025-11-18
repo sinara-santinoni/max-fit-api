@@ -4,8 +4,8 @@ import com.maxfit.dto.request.DesafioRequest;
 import com.maxfit.dto.request.ParticiparDesafioRequest;
 import com.maxfit.dto.response.DesafioResponse;
 import com.maxfit.model.Desafio;
-import com.maxfit.model.Usuario;
 import com.maxfit.model.StatusDesafio;
+import com.maxfit.model.Usuario;
 import com.maxfit.repository.DesafioRepository;
 import com.maxfit.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,12 +23,14 @@ public class DesafioService {
     private final DesafioRepository desafioRepository;
     private final UsuarioRepository usuarioRepository;
 
+    // LISTAR TODOS OS DESAFIOS
     public List<DesafioResponse> listarTodosDesafios() {
         return desafioRepository.findAll().stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
 
+    // LISTAR DESAFIOS DO ALUNO
     public List<DesafioResponse> listarDesafiosDoAluno(Long alunoId) {
         Usuario aluno = usuarioRepository.findById(alunoId)
                 .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
@@ -38,6 +40,7 @@ public class DesafioService {
                 .collect(Collectors.toList());
     }
 
+    // CRIAR DESAFIO
     @Transactional
     public void criarDesafio(DesafioRequest request) {
         Usuario aluno = usuarioRepository.findById(request.getAlunoId())
@@ -58,10 +61,20 @@ public class DesafioService {
         desafioRepository.save(desafio);
     }
 
+    // CONCLUIR DESAFIO (RECEBE alunoId)
     @Transactional
-    public void concluirDesafio(Long id) {
-        Desafio desafio = desafioRepository.findById(id)
+    public void concluirDesafio(Long desafioId, Long alunoId) {
+
+        Usuario aluno = usuarioRepository.findById(alunoId)
+                .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
+
+        Desafio desafio = desafioRepository.findById(desafioId)
                 .orElseThrow(() -> new RuntimeException("Desafio não encontrado"));
+
+        // Garantir que o aluno seja o dono do desafio
+        if (!desafio.getAluno().getId().equals(aluno.getId())) {
+            throw new RuntimeException("Você não pode concluir um desafio que não é seu.");
+        }
 
         if (desafio.getStatus() == StatusDesafio.CONCLUIDO) {
             throw new RuntimeException("Desafio já está concluído");
@@ -74,6 +87,7 @@ public class DesafioService {
         desafioRepository.save(desafio);
     }
 
+    // EXCLUIR DESAFIO
     @Transactional
     public void excluirDesafio(Long id) {
         if (!desafioRepository.existsById(id)) {
@@ -82,6 +96,7 @@ public class DesafioService {
         desafioRepository.deleteById(id);
     }
 
+    // PARTICIPAR DO DESAFIO
     @Transactional
     public void participarDesafio(Long id, ParticiparDesafioRequest request) {
         Desafio desafio = desafioRepository.findById(id)
@@ -91,18 +106,12 @@ public class DesafioService {
                 .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
 
         if (desafio.getStatus() != StatusDesafio.ATIVO) {
-            throw new RuntimeException("Desafio não está ativo para participação");
+            throw new RuntimeException("Desafio não está ativo");
         }
 
-        // Aqui você pode adicionar lógica adicional para registrar a participação
-        // Por exemplo, adicionar o aluno à lista de participantes do desafio
-        // ou criar uma entidade separada para gerenciar participações
-
-        // Atualizar progresso se fornecido
         if (request.getProgressoAtual() != null) {
             desafio.setProgressoAtual(request.getProgressoAtual());
 
-            // Auto-concluir se atingiu 100%
             if (request.getProgressoAtual() >= 100.0) {
                 desafio.setStatus(StatusDesafio.CONCLUIDO);
                 desafio.setDataConclusao(LocalDateTime.now());
@@ -112,6 +121,7 @@ public class DesafioService {
         desafioRepository.save(desafio);
     }
 
+    // CONVERTE ENTIDADE PARA RESPONSE
     private DesafioResponse convertToResponse(Desafio desafio) {
         return DesafioResponse.builder()
                 .id(desafio.getId())
