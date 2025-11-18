@@ -4,21 +4,14 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @Builder
-public class PostagemResponse {
+public class ComentarioResponse {
 
     private Long id;
     private Long usuarioId;
     private String usuarioNome;
     private String texto;
     private LocalDateTime dataCriacao;
-
-    // 🆕 Novos campos
-    private Integer totalCurtidas;
-    private Integer totalComentarios;
-    private Boolean usuarioCurtiu; // Se o usuário logado curtiu
-    private List<ComentarioResponse> comentarios;
 }
