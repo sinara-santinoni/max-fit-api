@@ -10,14 +10,14 @@ import java.util.Optional;
 public interface CurtidaComunidadeRepository extends JpaRepository<CurtidaComunidade, Long> {
 
     // Verifica se o usuário já curtiu a postagem
-    boolean existsByPostagemIdAndAlunoId(Long postagemId, Long alunoId);
+    boolean existsByPostagem_IdAndUsuario_Id(Long postagemId, Long usuarioId);
 
-    // Busca uma curtida específica
-    Optional<CurtidaComunidade> findByPostagemIdAndAlunoId(Long postagemId, Long alunoId);
+    // Busca curtida específica do usuário
+    Optional<CurtidaComunidade> findByPostagem_IdAndUsuario_Id(Long postagemId, Long usuarioId);
 
     // Conta quantas curtidas uma postagem tem
-    long countByPostagemId(Long postagemId);
+    long countByPostagem_Id(Long postagemId);
 
-    // Deleta curtida de um usuário em uma postagem
-    void deleteByPostagemIdAndAlunoId(Long postagemId, Long alunoId);
+    // Remove curtida específica
+    void deleteByPostagem_IdAndUsuario_Id(Long postagemId, Long usuarioId);
 }

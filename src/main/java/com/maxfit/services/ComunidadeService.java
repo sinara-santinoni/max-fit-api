@@ -12,8 +12,10 @@ import com.maxfit.repository.ComentarioComunidadeRepository;
 import com.maxfit.repository.CurtidaComunidadeRepository;
 import com.maxfit.repository.PostagemComunidadeRepository;
 import com.maxfit.repository.UsuarioRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +33,9 @@ public class ComunidadeService {
     private final CurtidaComunidadeRepository curtidaRepository;
     private final UsuarioRepository usuarioRepository;
 
+    // ==========================================================
     // LISTAR POSTAGENS
+    // ==========================================================
     public List<PostagemResponse> listarPostagens(Long usuarioLogadoId) {
         return postagemRepository.findAllByOrderByDataCriacaoDesc()
                 .stream()
@@ -39,7 +43,9 @@ public class ComunidadeService {
                 .collect(Collectors.toList());
     }
 
+    // ==========================================================
     // CRIAR POSTAGEM
+    // ==========================================================
     @Transactional
     public PostagemResponse criarPostagem(PostagemRequest request) {
         Usuario usuario = usuarioRepository.findById(request.getUsuarioId())
@@ -55,10 +61,11 @@ public class ComunidadeService {
         return toResponse(salva, request.getUsuarioId());
     }
 
-    // 🆕 CRIAR COMENTÁRIO
+    // ==========================================================
+    // CRIAR COMENTÁRIO
+    // ==========================================================
     @Transactional
     public ComentarioResponse criarComentario(Long postagemId, ComentarioRequest request) {
-        log.info("Criando comentário na postagem {}", postagemId);
 
         PostagemComunidade postagem = postagemRepository.findById(postagemId)
                 .orElseThrow(() -> new RuntimeException("Postagem não encontrada"));
@@ -84,7 +91,9 @@ public class ComunidadeService {
                 .build();
     }
 
-    // 🆕 CURTIR/DESCURTIR POSTAGEM
+    // ==========================================================
+    // CURTIR / DESCURTIR POSTAGEM
+    // ==========================================================
     @Transactional
     public boolean toggleCurtida(Long postagemId, Long usuarioId) {
         log.info("Toggle curtida - Postagem: {}, Usuario: {}", postagemId, usuarioId);
@@ -95,29 +104,32 @@ public class ComunidadeService {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        // Verificar se já curtiu
-        var curtidaExistente = curtidaRepository.findByPostagemIdAndAlunoId(postagemId, usuarioId);
+        // Verificar se já curtiu (AGORA usando método correto)
+        var curtidaExistente =
+                curtidaRepository.findByPostagem_IdAndUsuario_Id(postagemId, usuarioId);
 
         if (curtidaExistente.isPresent()) {
             // Descurtir
             curtidaRepository.delete(curtidaExistente.get());
             log.info("Curtida removida");
-            return false; // Descurtiu
-        } else {
-            // Curtir
-            CurtidaComunidade curtida = CurtidaComunidade.builder()
-                    .postagem(postagem)
-                    .usuario(usuario)
-                    .dataCriacao(LocalDateTime.now())
-                    .build();
-
-            curtidaRepository.save(curtida);
-            log.info("Curtida adicionada");
-            return true; // Curtiu
+            return false;
         }
+
+        // Curtir
+        CurtidaComunidade novaCurtida = CurtidaComunidade.builder()
+                .postagem(postagem)
+                .usuario(usuario)
+                .dataCriacao(LocalDateTime.now())
+                .build();
+
+        curtidaRepository.save(novaCurtida);
+        log.info("Curtida adicionada");
+        return true;
     }
 
-    // 🆕 LISTAR COMENTÁRIOS DE UMA POSTAGEM
+    // ==========================================================
+    // LISTAR COMENTÁRIOS
+    // ==========================================================
     public List<ComentarioResponse> listarComentarios(Long postagemId) {
         return comentarioRepository.findByPostagemIdOrderByDataCriacaoAsc(postagemId)
                 .stream()
@@ -131,19 +143,21 @@ public class ComunidadeService {
                 .collect(Collectors.toList());
     }
 
-    // CONVERTER PARA RESPONSE
+    // ==========================================================
+    // CONVERTER ENTIDADE → RESPONSE
+    // ==========================================================
     private PostagemResponse toResponse(PostagemComunidade p, Long usuarioLogadoId) {
-        // Contar curtidas e comentários
-        int totalCurtidas = (int) curtidaRepository.countByPostagemId(p.getId());
+
+        int totalCurtidas = (int) curtidaRepository.countByPostagem_Id(p.getId());
         int totalComentarios = (int) comentarioRepository.countByPostagemId(p.getId());
 
-        // Verificar se o usuário logado curtiu
         boolean usuarioCurtiu = false;
+
         if (usuarioLogadoId != null) {
-            usuarioCurtiu = curtidaRepository.existsByPostagemIdAndAlunoId(p.getId(), usuarioLogadoId);
+            usuarioCurtiu = curtidaRepository
+                    .existsByPostagem_IdAndUsuario_Id(p.getId(), usuarioLogadoId);
         }
 
-        // Buscar comentários
         List<ComentarioResponse> comentarios = listarComentarios(p.getId());
 
         return PostagemResponse.builder()
