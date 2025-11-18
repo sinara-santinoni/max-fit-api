@@ -14,7 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,6 +24,12 @@ import java.util.stream.Collectors;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+
+    // 🔹 Armazena tokens ativos na memória (token -> timestamp de expiração)
+    private static final ConcurrentHashMap<String, Long> sessoesAtivas = new ConcurrentHashMap<>();
+
+    // Tempo de expiração da sessão (4 horas)
+    private static final long TEMPO_EXPIRACAO = 1000L * 60 * 60 * 4;
 
     // ===== CADASTRAR USUÁRIO =====
     @Transactional
@@ -63,12 +70,34 @@ public class UsuarioService {
 
         log.info("Login realizado: {}", usuario.getNome());
 
+        // 🔹 Gera token de sessão único e registra validade (4h)
+        String token = UUID.randomUUID().toString();
+        sessoesAtivas.put(token, System.currentTimeMillis() + TEMPO_EXPIRACAO);
+
         return LoginResponse.builder()
                 .id(usuario.getId())
                 .nome(usuario.getNome())
                 .email(usuario.getEmail())
                 .tipo(usuario.getTipo())
+                .token(token) // devolve token pro front
                 .build();
+    }
+
+    // ===== VERIFICAR SESSÃO =====
+    public boolean sessaoValida(String token) {
+        if (token == null || token.isEmpty()) return false;
+        Long expiraEm = sessoesAtivas.get(token);
+        if (expiraEm == null) return false;
+        if (System.currentTimeMillis() > expiraEm) {
+            sessoesAtivas.remove(token);
+            return false;
+        }
+        return true;
+    }
+
+    // ===== LOGOUT =====
+    public void logout(String token) {
+        sessoesAtivas.remove(token);
     }
 
     // ===== LISTAR TODOS OS USUÁRIOS =====

@@ -19,7 +19,7 @@ public class TreinoController {
 
     private final TreinoService treinoService;
 
-    // POST /api/treinos  -> cria um treino
+
     @PostMapping
     public ResponseEntity<ApiResponse<Void>> cadastrarTreino(@Valid @RequestBody TreinoRequest request) {
         try {

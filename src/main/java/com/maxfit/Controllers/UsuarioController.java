@@ -40,7 +40,7 @@ public class UsuarioController {
         return ResponseEntity.status(status).body(response);
     }
 
-    // ===== LOGIN =====
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         try {
@@ -53,7 +53,6 @@ public class UsuarioController {
         }
     }
 
-    // ===== LISTAR TODOS OS USUÁRIOS =====
     @GetMapping("/usuarios")
     public ResponseEntity<?> listarUsuarios() {
         try {
@@ -72,21 +71,18 @@ public class UsuarioController {
         }
     }
 
-    // ===== ALUNOS DISPONÍVEIS =====
     @GetMapping("/alunos-disponiveis")
     public ResponseEntity<List<AlunoResponse>> buscarAlunosDisponiveis() {
         List<AlunoResponse> alunos = usuarioService.buscarAlunosDisponiveis();
         return ResponseEntity.ok(alunos);
     }
 
-    // ===== ALUNOS DE UM PERSONAL =====
     @GetMapping("/alunos-do-personal/{idPersonal}")
     public ResponseEntity<List<AlunoResponse>> buscarAlunosDoPersonal(@PathVariable Long idPersonal) {
         List<AlunoResponse> alunos = usuarioService.buscarAlunosDoPersonal(idPersonal);
         return ResponseEntity.ok(alunos);
     }
 
-    // ===== VINCULAR ALUNO =====
     @PutMapping("/vincular-aluno")
     public ResponseEntity<ApiResponse<Void>> vincularAluno(@Valid @RequestBody VincularAlunoRequest request) {
         try {
@@ -99,7 +95,6 @@ public class UsuarioController {
         }
     }
 
-    // ===== REMOVER ALUNO =====
     @PutMapping("/remover-aluno/{idAluno}")
     public ResponseEntity<ApiResponse<Void>> removerAluno(@PathVariable Long idAluno) {
         try {
