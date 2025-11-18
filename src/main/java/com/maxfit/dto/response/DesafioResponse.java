@@ -26,4 +26,7 @@ public class DesafioResponse {
 
     private LocalDateTime dataCriacao;
     private LocalDateTime dataConclusao;
+
+    // 🆕 Número de participantes
+    private Integer totalParticipantes;
 }
