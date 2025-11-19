@@ -2,7 +2,6 @@ package com.maxfit.services;
 
 import com.maxfit.dto.request.CadastroRequest;
 import com.maxfit.dto.request.LoginRequest;
-import com.maxfit.dto.request.VincularAlunoRequest;
 import com.maxfit.dto.response.AlunoResponse;
 import com.maxfit.dto.response.CadastroResponse;
 import com.maxfit.dto.response.LoginResponse;
