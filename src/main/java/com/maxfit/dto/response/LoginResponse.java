@@ -16,6 +16,8 @@ public class LoginResponse {
     private String email;
     private TipoUsuario tipo;
 
+    private String cidade; // 👈 NOVO
+
     // Novo campo para sessão/token (gerado no login)
     private String token;
 }

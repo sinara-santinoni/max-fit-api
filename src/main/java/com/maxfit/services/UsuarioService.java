@@ -48,6 +48,7 @@ public class UsuarioService {
                 .email(request.getEmail())
                 .senha(request.getSenha())
                 .tipo(request.getTipo())
+                .cidade(request.getCidade()) // 👈 ADICIONADO!
                 .build();
 
         Usuario salvo = usuarioRepository.save(usuario);
@@ -65,7 +66,8 @@ public class UsuarioService {
     public LoginResponse login(LoginRequest request) {
         log.info("Tentativa de login: {}", request.getEmail());
 
-        Usuario usuario = usuarioRepository.findByEmailAndSenha(request.getEmail(), request.getSenha())
+        Usuario usuario = usuarioRepository
+                .findByEmailAndSenha(request.getEmail(), request.getSenha())
                 .orElseThrow(() -> new RuntimeException("E-mail ou senha incorretos."));
 
         log.info("Login realizado: {}", usuario.getNome());
@@ -79,7 +81,8 @@ public class UsuarioService {
                 .nome(usuario.getNome())
                 .email(usuario.getEmail())
                 .tipo(usuario.getTipo())
-                .token(token) // devolve token pro front
+                .cidade(usuario.getCidade()) // 👈 ADICIONADO!
+                .token(token)
                 .build();
     }
 

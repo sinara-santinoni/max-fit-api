@@ -32,6 +32,10 @@ public class Usuario {
     @Column(name = "personal_id")
     private Long personalId;
 
+    // 👇 NOVO CAMPO
+    @Column(name = "cidade") // deixa nullable pra não quebrar registros antigos
+    private String cidade;
+
     @Column(name = "criado_em")
     private LocalDateTime criadoEm;
 

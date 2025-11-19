@@ -27,4 +27,8 @@ public class CadastroRequest {
 
     @NotNull(message = "Tipo de usuário é obrigatório")
     private TipoUsuario tipo;
+
+    // 👇 NOVO CAMPO
+    @NotBlank(message = "Cidade é obrigatória")
+    private String cidade;
 }
