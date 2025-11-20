@@ -1,6 +1,9 @@
 package com.maxfit.services;
 
+import com.maxfit.dto.response.DicaResponse;
 import com.maxfit.dto.response.ProfissionalSuporteResponse;
+
+import com.maxfit.dto.response.TutorialResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,7 +18,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SuporteService {
 
-    // Lista "mockada" de profissionais (poderia vir do banco futuramente)
+    // Lista "mockada" de profissionais
     private final List<ProfissionalSuporteResponse> profissionais = Arrays.asList(
             // ==== PSICÓLOGOS ====
             ProfissionalSuporteResponse.builder()
@@ -256,6 +259,98 @@ public class SuporteService {
                     .build()
     );
 
+    // Lista de tutoriais
+    private final List<TutorialResponse> tutoriais = Arrays.asList(
+            TutorialResponse.builder()
+                    .id(1L)
+                    .titulo("Como fazer supino corretamente")
+                    .descricao("Técnica correta e erros comuns")
+                    .url("https://www.youtube.com/watch?v=rT7DgCr-3pg")
+                    .thumbnail("🎥")
+                    .build(),
+            TutorialResponse.builder()
+                    .id(2L)
+                    .titulo("Agachamento livre: guia completo")
+                    .descricao("Passo a passo para iniciantes")
+                    .url("https://www.youtube.com/watch?v=ultWZbUMPL8")
+                    .thumbnail("🎥")
+                    .build(),
+            TutorialResponse.builder()
+                    .id(3L)
+                    .titulo("Alongamentos pré-treino")
+                    .descricao("Prepare seu corpo corretamente")
+                    .url("https://www.youtube.com/watch?v=xzTHQbvBpM8")
+                    .thumbnail("🎥")
+                    .build(),
+            TutorialResponse.builder()
+                    .id(4L)
+                    .titulo("Levantamento terra: execução perfeita")
+                    .descricao("Como fazer deadlift com segurança")
+                    .url("https://www.youtube.com/watch?v=op9kVnSso6Q")
+                    .thumbnail("🎥")
+                    .build(),
+            TutorialResponse.builder()
+                    .id(5L)
+                    .titulo("Rosca direta para bíceps")
+                    .descricao("Maximize o crescimento dos braços")
+                    .url("https://www.youtube.com/watch?v=ykJmrZ5v0Oo")
+                    .thumbnail("🎥")
+                    .build(),
+            TutorialResponse.builder()
+                    .id(6L)
+                    .titulo("Desenvolvimento militar correto")
+                    .descricao("Fortaleça seus ombros com segurança")
+                    .url("https://www.youtube.com/watch?v=qEwKCR5JCog")
+                    .thumbnail("🎥")
+                    .build()
+    );
+
+    // Lista de dicas
+    private final List<DicaResponse> dicas = Arrays.asList(
+            DicaResponse.builder()
+                    .id(1L)
+                    .titulo("A importância da hidratação")
+                    .descricao("Beber água antes, durante e após o treino é essencial para manter o desempenho e a recuperação muscular. Mantenha-se hidratado durante todo o dia.")
+                    .categoria("Saúde")
+                    .conteudo("A hidratação adequada é crucial para o desempenho físico. Durante o exercício, perdemos água através do suor, e essa perda precisa ser reposta. Beba pelo menos 500ml de água 2 horas antes do treino, pequenos goles durante o exercício, e reponha 150% do peso perdido após o treino.")
+                    .build(),
+            DicaResponse.builder()
+                    .id(2L)
+                    .titulo("Como evitar lesões na musculação")
+                    .descricao("Dicas de prevenção e cuidados importantes para treinar com segurança e evitar afastamentos.")
+                    .categoria("Segurança")
+                    .conteudo("Prevenção de lesões: sempre faça aquecimento adequado (5-10 min), utilize a técnica correta antes de aumentar a carga, respeite os dias de descanso, alongue após o treino, e escute seu corpo - dor não é normal.")
+                    .build(),
+            DicaResponse.builder()
+                    .id(3L)
+                    .titulo("Nutrição pré-treino")
+                    .descricao("O que comer antes de treinar para melhor performance e energia durante os exercícios.")
+                    .categoria("Nutrição")
+                    .conteudo("Consuma carboidratos complexos 1-2 horas antes (aveia, batata-doce) para energia sustentada, adicione proteína magra (frango, ovos) e evite gorduras em excesso. Uma banana 30min antes também é excelente para energia rápida.")
+                    .build(),
+            DicaResponse.builder()
+                    .id(4L)
+                    .titulo("Descanso e recuperação muscular")
+                    .descricao("Entenda porque dormir bem é tão importante quanto treinar para ganhar músculos.")
+                    .categoria("Saúde")
+                    .conteudo("O músculo cresce durante o descanso, não no treino. Durma 7-9 horas por noite, respeite 48h entre treinos do mesmo grupo muscular, e considere técnicas de recuperação como alongamento, massagem e banhos de contraste.")
+                    .build(),
+            DicaResponse.builder()
+                    .id(5L)
+                    .titulo("Suplementação básica para iniciantes")
+                    .descricao("Quais suplementos realmente fazem diferença e como utilizá-los corretamente.")
+                    .categoria("Nutrição")
+                    .conteudo("Para iniciantes, foque no básico: Whey Protein (pós-treino ou para bater meta proteica), Creatina 5g/dia (melhora força e recuperação), e um multivitamínico. Lembre-se: suplementos complementam, não substituem uma boa alimentação.")
+                    .build(),
+            DicaResponse.builder()
+                    .id(6L)
+                    .titulo("Progressão de carga adequada")
+                    .descricao("Como aumentar os pesos de forma segura e eficiente para evoluir nos treinos.")
+                    .categoria("Segurança")
+                    .conteudo("Aumente a carga gradualmente: 2-5% por semana ou quando conseguir fazer 2-3 repetições a mais que o planejado com boa técnica. Priorize sempre a execução correta sobre o peso. Anote seus treinos para acompanhar a evolução.")
+                    .build()
+    );
+
     private List<ProfissionalSuporteResponse> filtrarPorCidadeETipo(String cidade, String tipo) {
         if (cidade == null || cidade.isBlank()) {
             cidade = "";
@@ -277,5 +372,23 @@ public class SuporteService {
     public List<ProfissionalSuporteResponse> listarNutricionistasPorCidade(String cidade) {
         log.info("Buscando nutricionistas para a cidade: {}", cidade);
         return filtrarPorCidadeETipo(cidade, "NUTRICIONISTA");
+    }
+
+    public List<TutorialResponse> listarTutoriais() {
+        log.info("Listando todos os tutoriais");
+        return tutoriais;
+    }
+
+    public List<DicaResponse> listarDicas() {
+        log.info("Listando todas as dicas");
+        return dicas;
+    }
+
+    public DicaResponse buscarDicaPorId(Long id) {
+        log.info("Buscando dica com ID: {}", id);
+        return dicas.stream()
+                .filter(d -> d.getId().equals(id))
+                .findFirst()
+                .orElse(null);
     }
 }
