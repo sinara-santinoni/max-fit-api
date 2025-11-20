@@ -13,12 +13,14 @@ import com.maxfit.repository.DesafioRepository;
 import com.maxfit.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,75 +32,121 @@ public class DesafioService {
     private final UsuarioRepository usuarioRepository;
     private final DesafioAlunoRepository desafioAlunoRepository;
 
-    // LISTAR TODOS OS DESAFIOS
+    // ===== LISTAR TODOS OS DESAFIOS (otimizado) =====
     public List<DesafioResponse> listarTodosDesafios() {
-        return desafioRepository.findAll().stream()
-                .map(this::convertToResponse)
+        log.info("Listando todos os desafios");
+
+        List<Desafio> desafios = desafioRepository.findAll();
+
+        if (desafios.isEmpty()) {
+            return List.of();
+        }
+
+        // Agrupa IDs para buscar participações em lote (evita N+1)
+        List<Long> desafioIds = desafios.stream()
+                .map(Desafio::getId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        List<DesafioAluno> participacoes = desafioAlunoRepository.findByDesafioIdIn(desafioIds);
+
+        // Map de desafioId -> lista de participações
+        Map<Long, List<DesafioAluno>> mapaParticipacoes = participacoes.stream()
+                .collect(Collectors.groupingBy(DesafioAluno::getDesafioId));
+
+        // Monta response usando o mapa para contar participantes e pegar comentários/participantes se necessário
+        return desafios.stream()
+                .map(d -> toResponse(d, mapaParticipacoes.getOrDefault(d.getId(), List.of())))
                 .collect(Collectors.toList());
     }
 
-    // LISTAR DESAFIOS DO ALUNO
+    // ===== LISTAR DESAFIOS DO ALUNO (criados + participando) =====
     public List<DesafioResponse> listarDesafiosDoAluno(Long alunoId) {
+        log.info("Listando desafios do aluno ID: {}", alunoId);
+
         Usuario aluno = usuarioRepository.findById(alunoId)
-                .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aluno não encontrado"));
 
-        // Buscar desafios criados pelo aluno
-        List<Desafio> desafiosCriados = desafioRepository.findByAluno(aluno);
+        // Desafios criados pelo aluno (em lote)
+        List<Desafio> criados = desafioRepository.findByAlunoId(alunoId);
 
-        // Buscar desafios que o aluno está participando
-        List<DesafioAluno> participacoes = desafioAlunoRepository.findByAlunoId(alunoId);
-        List<Desafio> desafiosParticipando = participacoes.stream()
-                .map(da -> desafioRepository.findById(da.getDesafioId())
-                        .orElse(null))
-                .filter(d -> d != null)
+        // Participações do aluno (somente para obter os IDs dos desafios que participa)
+        List<DesafioAluno> participacoesDoAluno = desafioAlunoRepository.findByAlunoId(alunoId);
+
+        List<Long> idsParticipando = participacoesDoAluno.stream()
+                .map(DesafioAluno::getDesafioId)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        // Combinar ambos (sem duplicatas)
-        desafiosCriados.addAll(desafiosParticipando);
+        List<Desafio> participando = idsParticipando.isEmpty()
+                ? List.of()
+                : desafioRepository.findAllById(idsParticipando);
 
-        return desafiosCriados.stream()
-                .distinct()
-                .map(this::convertToResponse)
+        // Combina e remove duplicatas
+        Map<Long, Desafio> combinadosMap = new LinkedHashMap<>();
+        for (Desafio d : criados) combinadosMap.put(d.getId(), d);
+        for (Desafio d : participando) combinadosMap.putIfAbsent(d.getId(), d);
+
+        List<Desafio> combinados = new ArrayList<>(combinadosMap.values());
+
+        // Buscar participações em lote para essa lista de desafios
+        List<Long> combinadosIds = combinados.stream().map(Desafio::getId).collect(Collectors.toList());
+        List<DesafioAluno> participacoes = combinadosIds.isEmpty()
+                ? List.of()
+                : desafioAlunoRepository.findByDesafioIdIn(combinadosIds);
+
+        Map<Long, List<DesafioAluno>> mapaParticipacoes = participacoes.stream()
+                .collect(Collectors.groupingBy(DesafioAluno::getDesafioId));
+
+        return combinados.stream()
+                .map(d -> toResponse(d, mapaParticipacoes.getOrDefault(d.getId(), List.of())))
                 .collect(Collectors.toList());
     }
 
-    // 🆕 LISTAR PARTICIPANTES DE UM DESAFIO
+    // ===== LISTAR PARTICIPANTES DE UM DESAFIO =====
     public List<ParticipanteResponse> listarParticipantes(Long desafioId) {
         log.info("Listando participantes do desafio ID: {}", desafioId);
 
-        // Verificar se o desafio existe
         Desafio desafio = desafioRepository.findById(desafioId)
-                .orElseThrow(() -> new RuntimeException("Desafio não encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Desafio não encontrado"));
 
-        // Buscar todos os participantes
         List<DesafioAluno> participacoes = desafioAlunoRepository.findByDesafioId(desafioId);
 
         return participacoes.stream()
-                .map(da -> {
-                    Usuario aluno = usuarioRepository.findById(da.getAlunoId())
-                            .orElse(null);
-
+                .map(pa -> {
+                    Usuario aluno = usuarioRepository.findById(pa.getAlunoId()).orElse(null);
                     if (aluno == null) return null;
-
                     return ParticipanteResponse.builder()
-                            .id(da.getId())
+                            .id(pa.getId())
                             .alunoId(aluno.getId())
                             .alunoNome(aluno.getNome())
                             .alunoEmail(aluno.getEmail())
-                            .dataParticipacao(da.getDataParticipacao())
-                            .progressoAtual(desafio.getProgressoAtual())
+                            .dataParticipacao(pa.getDataParticipacao())
                             .status("PARTICIPANDO")
                             .build();
                 })
-                .filter(p -> p != null)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
-    // CRIAR DESAFIO
+    // ===== CRIAR DESAFIO =====
     @Transactional
     public DesafioResponse criarDesafio(DesafioRequest request) {
+        log.info("Criando desafio para aluno ID: {}", request.getAlunoId());
+
         Usuario aluno = usuarioRepository.findById(request.getAlunoId())
-                .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aluno não encontrado"));
+
+        // Validações simples
+        if (request.getMeta() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Meta inválida (deve ser > 0)");
+        }
+        if (request.getDataInicio() == null || request.getDataFim() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Data de início e fim são obrigatórias");
+        }
+        if (request.getDataInicio().isAfter(request.getDataFim())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Data de início não pode ser após a data de fim");
+        }
 
         Desafio desafio = Desafio.builder()
                 .aluno(aluno)
@@ -123,25 +171,25 @@ public class DesafioService {
 
         desafioAlunoRepository.save(participacao);
 
-        return convertToResponse(salvo);
+        // Retorna response (sem executar queries adicionais)
+        return toResponse(salvo, List.of(participacao));
     }
 
-    // CONCLUIR DESAFIO (RECEBE alunoId)
+    // ===== CONCLUIR DESAFIO =====
     @Transactional
     public void concluirDesafio(Long desafioId, Long alunoId) {
-        Usuario aluno = usuarioRepository.findById(alunoId)
-                .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
+        log.info("Concluir desafio {} solicitado por aluno {}", desafioId, alunoId);
 
         Desafio desafio = desafioRepository.findById(desafioId)
-                .orElseThrow(() -> new RuntimeException("Desafio não encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Desafio não encontrado"));
 
-        // Garantir que o aluno seja o dono do desafio
-        if (!desafio.getAluno().getId().equals(aluno.getId())) {
-            throw new RuntimeException("Você não pode concluir um desafio que não é seu.");
+        // Só o criador pode concluir
+        if (!desafio.getAluno().getId().equals(alunoId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Apenas o criador pode concluir o desafio");
         }
 
         if (desafio.getStatus() == StatusDesafio.CONCLUIDO) {
-            throw new RuntimeException("Desafio já está concluído");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Desafio já está concluído");
         }
 
         desafio.setStatus(StatusDesafio.CONCLUIDO);
@@ -151,43 +199,51 @@ public class DesafioService {
         desafioRepository.save(desafio);
     }
 
-    // EXCLUIR DESAFIO
+    // ===== EXCLUIR DESAFIO =====
     @Transactional
-    public void excluirDesafio(Long id) {
-        if (!desafioRepository.existsById(id)) {
-            throw new RuntimeException("Desafio não encontrado");
+    public void excluirDesafio(Long id, Long solicitanteId) {
+        log.info("Excluir desafio {} solicitado por {}", id, solicitanteId);
+
+        Desafio desafio = desafioRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Desafio não encontrado"));
+
+        // Só o criador pode excluir
+        if (!desafio.getAluno().getId().equals(solicitanteId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Apenas o criador pode excluir este desafio");
         }
 
-        // Remover todas as participações primeiro
+        // Remover participações em lote (se houver)
         List<DesafioAluno> participacoes = desafioAlunoRepository.findByDesafioId(id);
-        desafioAlunoRepository.deleteAll(participacoes);
+        if (!participacoes.isEmpty()) {
+            desafioAlunoRepository.deleteAll(participacoes);
+        }
 
-        // Remover o desafio
+        // Remover desafio
         desafioRepository.deleteById(id);
     }
 
-    // PARTICIPAR DO DESAFIO
+    // ===== PARTICIPAR DO DESAFIO =====
     @Transactional
     public void participarDesafio(Long id, ParticiparDesafioRequest request) {
-        Desafio desafio = desafioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Desafio não encontrado"));
+        log.info("Aluno {} quer participar do desafio {}", request.getAlunoId(), id);
 
-        Usuario aluno = usuarioRepository.findById(request.getAlunoId())
-                .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
+        Desafio desafio = desafioRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Desafio não encontrado"));
 
         if (desafio.getStatus() != StatusDesafio.ATIVO) {
-            throw new RuntimeException("Desafio não está ativo");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Desafio não está ativo");
         }
 
-        // Verificar se já está participando
-        boolean jaParticipa = desafioAlunoRepository
-                .existsByDesafioIdAndAlunoId(id, request.getAlunoId());
+        Usuario aluno = usuarioRepository.findById(request.getAlunoId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aluno não encontrado"));
 
+        // Já participa?
+        boolean jaParticipa = desafioAlunoRepository.existsByDesafioIdAndAlunoId(id, request.getAlunoId());
         if (jaParticipa) {
-            throw new RuntimeException("Você já está participando deste desafio");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Você já está participando deste desafio");
         }
 
-        // Criar participação
+        // Criar participação — NÃO ALTERAR desafio.progressoAtual aqui (progresso deve ser individual)
         DesafioAluno participacao = DesafioAluno.builder()
                 .desafioId(id)
                 .alunoId(aluno.getId())
@@ -196,51 +252,38 @@ public class DesafioService {
 
         desafioAlunoRepository.save(participacao);
 
-        // Atualizar progresso se fornecido
-        if (request.getProgressoAtual() != null) {
-            desafio.setProgressoAtual(request.getProgressoAtual());
-
-            if (request.getProgressoAtual() >= 100.0) {
-                desafio.setStatus(StatusDesafio.CONCLUIDO);
-                desafio.setDataConclusao(LocalDateTime.now());
-            }
-
-            desafioRepository.save(desafio);
-        }
+        // Observação: se você quiser dividir progresso por participante, crie uma entidade separada para o progresso do participante.
     }
 
-    // 🆕 SAIR DE UM DESAFIO
+    // ===== SAIR DO DESAFIO =====
     @Transactional
     public void sairDesafio(Long desafioId, Long alunoId) {
         log.info("Aluno {} saindo do desafio {}", alunoId, desafioId);
 
         DesafioAluno participacao = desafioAlunoRepository
                 .findByDesafioIdAndAlunoId(desafioId, alunoId)
-                .orElseThrow(() -> new RuntimeException("Você não está participando deste desafio"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Você não está participando deste desafio"));
 
         desafioAlunoRepository.delete(participacao);
     }
 
-    // CONVERTE ENTIDADE PARA RESPONSE
-    private DesafioResponse convertToResponse(Desafio desafio) {
-        // Contar participantes
-        int totalParticipantes = desafioAlunoRepository
-                .findByDesafioId(desafio.getId())
-                .size();
+    // ===== HELPERS / MAPPERS =====
+    private DesafioResponse toResponse(Desafio d, List<DesafioAluno> participacoes) {
+        int totalParticipantes = participacoes == null ? 0 : participacoes.size();
 
         return DesafioResponse.builder()
-                .id(desafio.getId())
-                .alunoId(desafio.getAluno().getId())
-                .alunoNome(desafio.getAluno().getNome())
-                .titulo(desafio.getTitulo())
-                .descricao(desafio.getDescricao())
-                .meta(desafio.getMeta())
-                .dataInicio(desafio.getDataInicio())
-                .dataFim(desafio.getDataFim())
-                .status(desafio.getStatus())
-                .progressoAtual(desafio.getProgressoAtual())
-                .dataCriacao(desafio.getDataCriacao())
-                .dataConclusao(desafio.getDataConclusao())
+                .id(d.getId())
+                .alunoId(d.getAluno().getId())
+                .alunoNome(d.getAluno().getNome())
+                .titulo(d.getTitulo())
+                .descricao(d.getDescricao())
+                .meta(d.getMeta())
+                .dataInicio(d.getDataInicio())
+                .dataFim(d.getDataFim())
+                .status(d.getStatus())
+                .progressoAtual(d.getProgressoAtual())
+                .dataCriacao(d.getDataCriacao())
+                .dataConclusao(d.getDataConclusao())
                 .totalParticipantes(totalParticipantes)
                 .build();
     }

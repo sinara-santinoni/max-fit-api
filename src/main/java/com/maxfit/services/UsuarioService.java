@@ -103,14 +103,6 @@ public class UsuarioService {
         sessoesAtivas.remove(token);
     }
 
-    // ===== LISTAR TODOS OS USUÁRIOS =====
-    public List<Usuario> listarTodos() {
-        log.info("Listando todos os usuários...");
-        List<Usuario> usuarios = usuarioRepository.findAll();
-        log.info("Total de usuários encontrados: {}", usuarios.size());
-        return usuarios;
-    }
-
     // ===== BUSCAR ALUNOS DISPONÍVEIS =====
     public List<AlunoResponse> buscarAlunosDisponiveis() {
         log.info("Buscando alunos disponíveis");

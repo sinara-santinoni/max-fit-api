@@ -50,7 +50,7 @@ public class UsuarioController {
     @GetMapping("/usuarios")
     public ResponseEntity<?> listarUsuarios() {
         try {
-            List<Usuario> usuarios = usuarioService.listarTodos();
+            List<AlunoResponse> usuarios = usuarioService.buscarAlunosDisponiveis();
             return ResponseEntity.ok(Map.of(
                     "sucesso", true,
                     "mensagem", "Lista de usuários retornada com sucesso.",
