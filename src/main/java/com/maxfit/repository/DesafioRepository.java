@@ -19,4 +19,6 @@ public interface DesafioRepository extends JpaRepository<Desafio, Long> {
 
     // Busca desafios ativos de um aluno
     List<Desafio> findByAlunoAndStatusOrderByDataInicioDesc(Usuario aluno, StatusDesafio status);
+
+    List<Desafio> findByAlunoId(Long alunoId);
 }

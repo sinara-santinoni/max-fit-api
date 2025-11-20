@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -81,12 +82,20 @@ public class DesafioController {
 
     // EXCLUIR DESAFIO
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> excluirDesafio(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> excluirDesafio(
+            @PathVariable Long id,
+            @RequestParam Long solicitanteId) {
         try {
-            desafioService.excluirDesafio(id);
+            desafioService.excluirDesafio(id, solicitanteId);
+
             return ResponseEntity.ok(
                     ApiResponse.success("Desafio excluído com sucesso!")
             );
+
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(ApiResponse.error(e.getReason()));
+
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error(e.getMessage()));

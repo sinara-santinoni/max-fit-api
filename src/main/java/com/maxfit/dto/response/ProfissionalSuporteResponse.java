@@ -17,5 +17,13 @@ public class ProfissionalSuporteResponse {
     private String telefone;
     private String email;
     private String cidade;
-    private String tipo; // PSICOLOGO ou NUTRICIONISTA
+
+    /**
+     * Tipo do profissional
+     * Valores possíveis:
+     *  - "PSICOLOGO"
+     *  - "NUTRICIONISTA"
+     */
+    private String tipo;
+
 }

@@ -20,59 +20,75 @@ public class SuporteController {
 
     private final SuporteService suporteService;
 
-    /**
-     * Lista psicólogos por cidade
-     * GET /api/suporte/psicologos?cidade=Florianópolis
-     */
+    // ============================================================
+    // LISTAR PSICÓLOGOS POR CIDADE
+    // GET /api/suporte/psicologos?cidade=Florianópolis
+    // ============================================================
     @GetMapping("/psicologos")
     public ResponseEntity<List<ProfissionalSuporteResponse>> listarPsicologos(
             @RequestParam(required = false) String cidade) {
-        log.info("Request para listar psicólogos - cidade: {}", cidade);
-        List<ProfissionalSuporteResponse> psicologos = suporteService.listarPsicologosPorCidade(cidade);
+
+        log.info("GET /api/suporte/psicologos - cidade: {}", cidade);
+
+        List<ProfissionalSuporteResponse> psicologos =
+                suporteService.listarPsicologosPorCidade(cidade);
+
         return ResponseEntity.ok(psicologos);
     }
 
-    /**
-     * Lista nutricionistas por cidade
-     * GET /api/suporte/nutricionistas?cidade=Florianópolis
-     */
+    // ============================================================
+    // LISTAR NUTRICIONISTAS POR CIDADE
+    // GET /api/suporte/nutricionistas?cidade=Florianópolis
+    // ============================================================
     @GetMapping("/nutricionistas")
     public ResponseEntity<List<ProfissionalSuporteResponse>> listarNutricionistas(
             @RequestParam(required = false) String cidade) {
-        log.info("Request para listar nutricionistas - cidade: {}", cidade);
-        List<ProfissionalSuporteResponse> nutricionistas = suporteService.listarNutricionistasPorCidade(cidade);
+
+        log.info("GET /api/suporte/nutricionistas - cidade: {}", cidade);
+
+        List<ProfissionalSuporteResponse> nutricionistas =
+                suporteService.listarNutricionistasPorCidade(cidade);
+
         return ResponseEntity.ok(nutricionistas);
     }
 
-    /**
-     * Lista todos os tutoriais
-     * GET /api/suporte/tutoriais
-     */
+    // ============================================================
+    // LISTAR TUTORIAIS
+    // GET /api/suporte/tutoriais
+    // ============================================================
     @GetMapping("/tutoriais")
     public ResponseEntity<List<TutorialResponse>> listarTutoriais() {
-        log.info("Request para listar tutoriais");
+
+        log.info("GET /api/suporte/tutoriais");
+
         List<TutorialResponse> tutoriais = suporteService.listarTutoriais();
+
         return ResponseEntity.ok(tutoriais);
     }
 
-    /**
-     * Lista todas as dicas
-     * GET /api/suporte/dicas
-     */
+    // ============================================================
+    // LISTAR DICAS
+    // GET /api/suporte/dicas
+    // ============================================================
     @GetMapping("/dicas")
     public ResponseEntity<List<DicaResponse>> listarDicas() {
-        log.info("Request para listar dicas");
+
+        log.info("GET /api/suporte/dicas");
+
         List<DicaResponse> dicas = suporteService.listarDicas();
+
         return ResponseEntity.ok(dicas);
     }
 
-    /**
-     * Busca uma dica específica por ID
-     * GET /api/suporte/dicas/1
-     */
+    // ============================================================
+    // BUSCAR DICA POR ID
+    // GET /api/suporte/dicas/{id}
+    // ============================================================
     @GetMapping("/dicas/{id}")
     public ResponseEntity<DicaResponse> buscarDica(@PathVariable Long id) {
-        log.info("Request para buscar dica com ID: {}", id);
+
+        log.info("GET /api/suporte/dicas/{} - buscar dica", id);
+
         DicaResponse dica = suporteService.buscarDicaPorId(id);
 
         if (dica == null) {
