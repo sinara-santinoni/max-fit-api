@@ -90,13 +90,17 @@ public class TreinoService {
 
         return TreinoResponse.builder()
                 .id(treino.getId())
+                .alunoId(treino.getAlunoId())         // 🔥 IMPORTANTE
+                .personalId(treino.getPersonalId())   // 🔥 IMPORTANTE
                 .titulo(treino.getTitulo())
                 .objetivo(treino.getObjetivo())
                 .nivel(treino.getNivel())
                 .validade(treino.getValidade())
+                .criadoEm(treino.getCriadoEm())       // 🔥 IMPORTANTE
                 .exercicios(exercicios)
                 .build();
     }
+
 
     private ExercicioResponse toExercicioResponse(Exercicio exercicio) {
         return ExercicioResponse.builder()
