@@ -7,7 +7,6 @@ import com.maxfit.dto.response.AlunoResponse;
 import com.maxfit.dto.response.ApiResponse;
 import com.maxfit.dto.response.CadastroResponse;
 import com.maxfit.dto.response.LoginResponse;
-import com.maxfit.model.Usuario;
 import com.maxfit.services.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +24,9 @@ public class UsuarioController {
 
     private final UsuarioService usuarioService;
 
-    // ===== CADASTRAR USUÁRIO =====
+    // ============================================================
+    // CADASTRAR USUÁRIO
+    // ============================================================
     @PostMapping("/cadastro")
     public ResponseEntity<CadastroResponse> cadastrar(@Valid @RequestBody CadastroRequest request) {
         CadastroResponse response = usuarioService.cadastrar(request);
@@ -33,7 +34,9 @@ public class UsuarioController {
         return ResponseEntity.status(status).body(response);
     }
 
-    // ===== LOGIN =====
+    // ============================================================
+    // LOGIN
+    // ============================================================
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         try {
@@ -46,7 +49,9 @@ public class UsuarioController {
         }
     }
 
-    // ===== LISTAR TODOS OS USUÁRIOS =====
+    // ============================================================
+    // LISTAR TODOS OS USUÁRIOS (cuidado: hoje lista só disponíveis)
+    // ============================================================
     @GetMapping("/usuarios")
     public ResponseEntity<?> listarUsuarios() {
         try {
@@ -65,21 +70,36 @@ public class UsuarioController {
         }
     }
 
-    // ===== BUSCAR ALUNOS DISPONÍVEIS =====
+    // ============================================================
+    // NOVO — LISTAR TODOS OS ALUNOS CADASTRADOS
+    // ============================================================
+    @GetMapping("/alunos")
+    public ResponseEntity<List<AlunoResponse>> listarTodosOsAlunos() {
+        List<AlunoResponse> alunos = usuarioService.buscarTodosOsAlunos();
+        return ResponseEntity.ok(alunos);
+    }
+
+    // ============================================================
+    // LISTAR ALUNOS DISPONÍVEIS (sem personal)
+    // ============================================================
     @GetMapping("/alunos-disponiveis")
     public ResponseEntity<List<AlunoResponse>> buscarAlunosDisponiveis() {
         List<AlunoResponse> alunos = usuarioService.buscarAlunosDisponiveis();
         return ResponseEntity.ok(alunos);
     }
 
-    // ===== BUSCAR ALUNOS DO PERSONAL =====
+    // ============================================================
+    // LISTAR ALUNOS DO PERSONAL
+    // ============================================================
     @GetMapping("/alunos-do-personal/{idPersonal}")
     public ResponseEntity<List<AlunoResponse>> buscarAlunosDoPersonal(@PathVariable Long idPersonal) {
         List<AlunoResponse> alunos = usuarioService.buscarAlunosDoPersonal(idPersonal);
         return ResponseEntity.ok(alunos);
     }
 
-    // ===== VINCULAR ALUNO AO PERSONAL =====
+    // ============================================================
+    // VINCULAR ALUNO AO PERSONAL
+    // ============================================================
     @PutMapping("/vincular-aluno")
     public ResponseEntity<ApiResponse<Void>> vincularAluno(@Valid @RequestBody VincularAlunoRequest request) {
         try {
@@ -92,7 +112,9 @@ public class UsuarioController {
         }
     }
 
-    // ===== REMOVER ALUNO DO PERSONAL =====
+    // ============================================================
+    // REMOVER / DESVINCULAR ALUNO
+    // ============================================================
     @PutMapping("/remover-aluno/{idAluno}")
     public ResponseEntity<ApiResponse<Void>> removerAluno(@PathVariable Long idAluno) {
         try {

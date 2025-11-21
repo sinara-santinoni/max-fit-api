@@ -14,8 +14,14 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     Optional<Usuario> findByEmailAndSenha(String email, String senha);
 
+    // 🔹 Alunos SEM personal
     List<Usuario> findByTipoAndPersonalIdIsNull(TipoUsuario tipo);
 
+    // 🔹 Alunos COM personal
     List<Usuario> findByTipoAndPersonalId(TipoUsuario tipo, Long personalId);
 
-    boolean existsByEmail(String email);}
+    boolean existsByEmail(String email);
+
+    // 🔹 NOVO — Buscar TODOS os usuários do tipo ALUNO
+    List<Usuario> findByTipo(TipoUsuario tipo);
+}

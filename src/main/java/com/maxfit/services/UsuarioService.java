@@ -25,13 +25,16 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
 
-    // 🔹 Armazena tokens ativos na memória (token -> timestamp de expiração)
+    // 🔹 Tokens ativos na memória
     private static final ConcurrentHashMap<String, Long> sessoesAtivas = new ConcurrentHashMap<>();
 
-    // Tempo de expiração da sessão (4 horas)
+    // 🔹 Sessão expira em 4 horas
     private static final long TEMPO_EXPIRACAO = 1000L * 60 * 60 * 4;
 
-    // ===== CADASTRAR USUÁRIO =====
+
+    // ============================================================
+    // CADASTRAR USUÁRIO
+    // ============================================================
     @Transactional
     public CadastroResponse cadastrar(CadastroRequest request) {
         log.info("Iniciando cadastro de usuário: {}", request.getEmail());
@@ -48,12 +51,10 @@ public class UsuarioService {
                 .email(request.getEmail())
                 .senha(request.getSenha())
                 .tipo(request.getTipo())
-                .cidade(request.getCidade()) // 👈 ADICIONADO!
+                .cidade(request.getCidade())
                 .build();
 
         Usuario salvo = usuarioRepository.save(usuario);
-
-        log.info("Usuário cadastrado com sucesso: ID {}", salvo.getId());
 
         return CadastroResponse.builder()
                 .sucesso(true)
@@ -62,7 +63,10 @@ public class UsuarioService {
                 .build();
     }
 
-    // ===== LOGIN =====
+
+    // ============================================================
+    // LOGIN
+    // ============================================================
     public LoginResponse login(LoginRequest request) {
         log.info("Tentativa de login: {}", request.getEmail());
 
@@ -70,9 +74,7 @@ public class UsuarioService {
                 .findByEmailAndSenha(request.getEmail(), request.getSenha())
                 .orElseThrow(() -> new RuntimeException("E-mail ou senha incorretos."));
 
-        log.info("Login realizado: {}", usuario.getNome());
-
-        // 🔹 Gera token de sessão único e registra validade (4h)
+        // gera token
         String token = UUID.randomUUID().toString();
         sessoesAtivas.put(token, System.currentTimeMillis() + TEMPO_EXPIRACAO);
 
@@ -81,12 +83,15 @@ public class UsuarioService {
                 .nome(usuario.getNome())
                 .email(usuario.getEmail())
                 .tipo(usuario.getTipo())
-                .cidade(usuario.getCidade()) // 👈 ADICIONADO!
+                .cidade(usuario.getCidade())
                 .token(token)
                 .build();
     }
 
-    // ===== VERIFICAR SESSÃO =====
+
+    // ============================================================
+    // SESSÃO
+    // ============================================================
     public boolean sessaoValida(String token) {
         if (token == null || token.isEmpty()) return false;
         Long expiraEm = sessoesAtivas.get(token);
@@ -98,75 +103,93 @@ public class UsuarioService {
         return true;
     }
 
-    // ===== LOGOUT =====
     public void logout(String token) {
         sessoesAtivas.remove(token);
     }
 
-    // ===== BUSCAR ALUNOS DISPONÍVEIS =====
+
+    // ============================================================
+    // NOVO: BUSCAR TODOS OS ALUNOS
+    // ============================================================
+    public List<AlunoResponse> buscarTodosOsAlunos() {
+        log.info("Buscando TODOS os alunos cadastrados");
+
+        List<Usuario> alunos = usuarioRepository.findByTipo(TipoUsuario.ALUNO);
+
+        return alunos.stream()
+                .map(this::toAlunoResponse)
+                .collect(Collectors.toList());
+    }
+
+
+    // ============================================================
+    // BUSCAR ALUNOS DISPONÍVEIS (sem personal)
+    // ============================================================
     public List<AlunoResponse> buscarAlunosDisponiveis() {
         log.info("Buscando alunos disponíveis");
 
         List<Usuario> alunos = usuarioRepository.findByTipoAndPersonalIdIsNull(TipoUsuario.ALUNO);
 
-        log.info("Alunos disponíveis: {}", alunos.size());
-
         return alunos.stream()
                 .map(this::toAlunoResponse)
                 .collect(Collectors.toList());
     }
 
-    // ===== BUSCAR ALUNOS DE UM PERSONAL =====
+
+    // ============================================================
+    // BUSCAR ALUNOS DO PERSONAL
+    // ============================================================
     public List<AlunoResponse> buscarAlunosDoPersonal(Long idPersonal) {
-        log.info("Buscando alunos do personal: {}", idPersonal);
+        log.info("Buscando alunos do personal {}", idPersonal);
 
         List<Usuario> alunos = usuarioRepository.findByTipoAndPersonalId(TipoUsuario.ALUNO, idPersonal);
 
-        log.info("Alunos do personal {}: {}", idPersonal, alunos.size());
-
         return alunos.stream()
                 .map(this::toAlunoResponse)
                 .collect(Collectors.toList());
     }
 
-    // ===== VINCULAR ALUNO =====
+
+    // ============================================================
+    // VINCULAR ALUNO AO PERSONAL
+    // ============================================================
     @Transactional
     public void vincularAluno(VincularAlunoRequest request) {
-        log.info("Vinculando aluno {} ao personal {}", request.getAlunoId(), request.getPersonalId());
 
         Usuario aluno = usuarioRepository.findById(request.getAlunoId())
                 .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
 
         if (aluno.getTipo() != TipoUsuario.ALUNO) {
-            throw new RuntimeException("Usuário não é um aluno");
+            throw new RuntimeException("Usuário informado não é aluno.");
         }
 
         aluno.setPersonalId(request.getPersonalId());
         usuarioRepository.save(aluno);
-
-        log.info("Aluno {} vinculado ao personal {}", request.getAlunoId(), request.getPersonalId());
     }
 
-    // ===== REMOVER ALUNO =====
+
+    // ============================================================
+    // DESVINCULAR ALUNO
+    // ============================================================
     @Transactional
     public void removerAluno(Long idAluno) {
-        log.info("Removendo vínculo do aluno: {}", idAluno);
-
         Usuario aluno = usuarioRepository.findById(idAluno)
                 .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
 
         aluno.setPersonalId(null);
         usuarioRepository.save(aluno);
-
-        log.info("Aluno {} desvinculado do personal", idAluno);
     }
 
-    // ===== CONVERSÃO DE ENTIDADE PARA RESPONSE =====
+
+    // ============================================================
+    // CONVERSÃO PARA DTO
+    // ============================================================
     private AlunoResponse toAlunoResponse(Usuario usuario) {
         return AlunoResponse.builder()
                 .id(usuario.getId())
                 .nome(usuario.getNome())
                 .email(usuario.getEmail())
+                .cidade(usuario.getCidade())
                 .build();
     }
 }
