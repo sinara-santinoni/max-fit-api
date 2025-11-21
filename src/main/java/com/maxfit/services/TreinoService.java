@@ -6,10 +6,14 @@ import com.maxfit.dto.response.TreinoResponse;
 import com.maxfit.model.Exercicio;
 import com.maxfit.model.Treino;
 import com.maxfit.repository.TreinoRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,7 +36,10 @@ public class TreinoService {
         treino.setNivel(request.getNivel());
         treino.setValidade(request.getValidade());
 
-        // Adiciona os exercícios do treino
+        // 🔥 ESSA É A ÚNICA COISA NOVA
+        treino.setCriadoEm(LocalDateTime.now());
+
+        // Exercícios
         request.getExercicios().forEach(exReq -> {
             Exercicio exercicio = new Exercicio();
             exercicio.setNome(exReq.getNome());
@@ -47,18 +54,8 @@ public class TreinoService {
         log.info("Novo treino criado: {} (ID {}) para aluno {}", salvo.getTitulo(), salvo.getId(), salvo.getAlunoId());
     }
 
-    // 🔹 NOVO MÉTODO - Lista todos os treinos cadastrados
     public List<TreinoResponse> listarTodos() {
-        log.info("Listando todos os treinos...");
-
         List<Treino> treinos = treinoRepository.findAll();
-
-        if (treinos.isEmpty()) {
-            log.info("Nenhum treino encontrado no banco de dados.");
-            return List.of();
-        }
-
-        log.info("Total de treinos encontrados: {}", treinos.size());
 
         return treinos.stream()
                 .map(this::toTreinoResponse)
@@ -66,23 +63,13 @@ public class TreinoService {
     }
 
     public List<TreinoResponse> buscarTreinosDoAluno(Long alunoId) {
-        log.info("Buscando treinos do aluno: {}", alunoId);
-
         List<Treino> treinos = treinoRepository.findByAlunoIdOrderByIdDesc(alunoId);
-
-        if (treinos.isEmpty()) {
-            log.info("Nenhum treino encontrado para aluno {}", alunoId);
-            return List.of();
-        }
-
-        log.info("Treinos enviados para aluno {}: {}", alunoId, treinos.size());
 
         return treinos.stream()
                 .map(this::toTreinoResponse)
                 .collect(Collectors.toList());
     }
 
-    // 🔹 Conversão de entidades para DTOs
     private TreinoResponse toTreinoResponse(Treino treino) {
         List<ExercicioResponse> exercicios = treino.getExercicios().stream()
                 .map(this::toExercicioResponse)
@@ -90,17 +77,16 @@ public class TreinoService {
 
         return TreinoResponse.builder()
                 .id(treino.getId())
-                .alunoId(treino.getAlunoId())         // 🔥 IMPORTANTE
-                .personalId(treino.getPersonalId())   // 🔥 IMPORTANTE
+                .alunoId(treino.getAlunoId())
+                .personalId(treino.getPersonalId())
                 .titulo(treino.getTitulo())
                 .objetivo(treino.getObjetivo())
                 .nivel(treino.getNivel())
                 .validade(treino.getValidade())
-                .criadoEm(treino.getCriadoEm())       // 🔥 IMPORTANTE
+                .criadoEm(treino.getCriadoEm())
                 .exercicios(exercicios)
                 .build();
     }
-
 
     private ExercicioResponse toExercicioResponse(Exercicio exercicio) {
         return ExercicioResponse.builder()
@@ -110,5 +96,13 @@ public class TreinoService {
                 .descanso(exercicio.getDescanso())
                 .observacoes(exercicio.getObservacoes())
                 .build();
+    }
+
+    // ⭐ NOVO — Buscar treino pelo ID (usado ao clicar "Ver detalhes")
+    public TreinoResponse buscarPorId(Long treinoId) {
+        Treino treino = treinoRepository.findById(treinoId)
+                .orElseThrow(() -> new RuntimeException("Treino não encontrado!"));
+
+        return toTreinoResponse(treino);
     }
 }

@@ -4,8 +4,10 @@ import com.maxfit.dto.request.TreinoRequest;
 import com.maxfit.dto.response.ApiResponse;
 import com.maxfit.dto.response.TreinoResponse;
 import com.maxfit.services.TreinoService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,14 +21,19 @@ public class TreinoController {
 
     private final TreinoService treinoService;
 
-
+    /**
+     * POST - Cadastrar novo treino
+     */
     @PostMapping
-    public ResponseEntity<ApiResponse<Void>> cadastrarTreino(@Valid @RequestBody TreinoRequest request) {
+    public ResponseEntity<ApiResponse<Void>> cadastrarTreino(
+            @Valid @RequestBody TreinoRequest request
+    ) {
         try {
             treinoService.cadastrarTreino(request);
             return ResponseEntity
                     .status(HttpStatus.CREATED)
                     .body(ApiResponse.success("Treino cadastrado com sucesso!"));
+
         } catch (RuntimeException e) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
@@ -34,14 +41,18 @@ public class TreinoController {
         }
     }
 
-    // GET /api/treinos -> lista todos os treinos
+    /**
+     * GET - Lista todos os treinos do sistema
+     */
     @GetMapping
     public ResponseEntity<ApiResponse<List<TreinoResponse>>> listarTodos() {
         try {
             List<TreinoResponse> lista = treinoService.listarTodos();
+
             return ResponseEntity.ok(
                     ApiResponse.success("Lista de treinos retornada com sucesso.", lista)
             );
+
         } catch (Exception e) {
             return ResponseEntity
                     .internalServerError()
@@ -49,10 +60,26 @@ public class TreinoController {
         }
     }
 
-    // GET /api/treinos/{alunoId} -> lista treinos de um aluno específico
+    /**
+     * GET - Lista treinos de um aluno específico
+     */
     @GetMapping("/{alunoId}")
-    public ResponseEntity<List<TreinoResponse>> buscarTreinosDoAluno(@PathVariable Long alunoId) {
+    public ResponseEntity<List<TreinoResponse>> buscarTreinosDoAluno(
+            @PathVariable Long alunoId
+    ) {
         List<TreinoResponse> treinos = treinoService.buscarTreinosDoAluno(alunoId);
         return ResponseEntity.ok(treinos);
+    }
+
+    /**
+     * GET - Buscar detalhes de um treino específico
+     * (usado quando o aluno clica em "Ver detalhes")
+     */
+    @GetMapping("/detalhes/{treinoId}")
+    public ResponseEntity<TreinoResponse> buscarTreinoPorId(
+            @PathVariable Long treinoId
+    ) {
+        TreinoResponse treino = treinoService.buscarPorId(treinoId);
+        return ResponseEntity.ok(treino);
     }
 }
